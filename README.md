@@ -55,6 +55,15 @@ int main() {
 }
 ```
 
+## Results
+
+Breakpoints:
+
+![{0727F23B-F4EA-4664-B687-A80069C6E795}](https://github.com/user-attachments/assets/905971b9-8716-4d6a-9509-21ce874f367e)
+
+Memory editing:
+![{F2A69C4A-914D-47B6-99DD-D515A1121441}](https://github.com/user-attachments/assets/64b3cbf2-f655-4bd0-b70f-26b5817e2deb)
+
 ## Limitations
 
 - Not effective against kernel-mode debuggers (they bypass user-mode restrictions)
