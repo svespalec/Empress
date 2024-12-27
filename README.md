@@ -1,45 +1,45 @@
 # Empress
 
-A header-only C++ library that prevents debugger functionality by restricting process memory operations through Windows Job Objects.
+A header-only C++ library that prevents debugger functionality by restricting process memory operations through [Windows Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects).
 
 ## How It Works
-
 The technique leverages Windows Job Objects to set a process memory limit that's just enough for your code to run, but not enough for debuggers to function.
 
-1. **Breakpoint Types & Memory Operations**
-   - Software Breakpoints (int 3/0xCC):
-     - Requires memory writes to replace instructions
-     - Most common, used by default in user-mode debuggers
-   - Hardware Breakpoints:
-     - Uses CPU debug registers (DR0-DR7)
-     - Doesn't require memory modification
-     - BUT: Debugger still needs memory for exception handlers
-     - Job object won't block the breakpoint itself, but prevents debugger from handling it
+## Breakpoint Types
+### Software Breakpoints (int 3/0xCC)
+- Requires memory writes to replace instructions
+- Most common debugging method
+- Default choice for user-mode debuggers
+  
+### Hardware Breakpoints
+- Utilizes CPU debug registers (DR0-DR7)
+- No memory modification required
+- Exception handlers still need memory allocation
+- Job object prevents exception handling while allowing breakpoints
+  
+## Memory Management
+### Memory Types
+| Type | Description | Characteristics |
+|------|-------------|-----------------|
+| Private Pages | Process-specific memory | - Heap and stack storage<br>- Copy-on-write when modified<br>- Required for debugger operations |
+| Shared Pages | Mapped files and shared memory | - Accessible by multiple processes<br>- Usually read-only for code sections |
+| Committed Pages | Physical or page file backed | - Contains existing code<br>- Unaffected by job object restrictions |
 
-2. **Memory Pages & Protection**
-   - Windows Memory Types:
-     - Private Pages: Process-specific memory (heap, stack)
-       - Copy-on-write: New private copy when modified
-       - Most debugger operations need private pages
-     - Shared Pages: Mapped files, shared memory
-       - Multiple processes can access
-       - Usually read-only for code sections
-     - Committed Pages: Backed by physical memory or page file
-       - Your existing code stays in these
-       - Job object won't affect already committed memory
-   - What Job Object Affects:
-     - Blocks NEW memory commitments
-     - Prevents private page allocations needed by debuggers
-     - Existing committed pages (your code) stay untouched
-     - Shared pages remain accessible
-
-3. **Why 0x1000 Limit Works**
-   - 0x1000 (4KB) is minimum page size
-   - Already committed memory (your code) keeps running
-   - Debuggers can't:
-     - Allocate new private pages for their data
-     - Create exception handling threads
-     - Modify page protections
+### Job Object Effects
+The job object restriction:
+- Prevents new memory commitments
+- Blocks private page allocations needed by debuggers
+- Preserves existing committed pages
+- Maintains shared page accessibility
+  
+## Protection Mechanism
+The 0x1000 (4KB) memory limit is effective because:
+- Matches minimum system page size
+- Allows existing committed memory to continue execution (your code)
+- Prevents debuggers from:
+  - Allocating private pages for operation
+  - Creating exception handling threads
+  - Modifying memory protection flags
 
 ## Usage
 
